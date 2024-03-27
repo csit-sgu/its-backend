@@ -1,15 +1,10 @@
-use chrono::{DateTime, Utc};
-use poem_openapi::Object;
-use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
-use uuid::Uuid;
-
 /// Trait for database entities.
 pub(crate) trait Entity {
     fn table_name() -> &'static str;
 }
 
 /// Quickly implement `Entity` trait on a struct.
+#[allow(unused_macros)]
 macro_rules! impl_entity {
     ($sn:ident, $tn:literal) => {
         impl Entity for $sn {
@@ -20,25 +15,8 @@ macro_rules! impl_entity {
     };
 }
 
-// NOTE(vinc3nzo): still too much code repetition.
-// Need to implement proc-macro for this.
+// define your entities here
+// NOTE: helpful derive macros:
+// Debug, Clone, sqlx::FromRow, serde::{Serialize, Deserialize}, poem_openapi::Object]
 
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, Object)]
-pub(crate) struct Book {
-    pub book_id: Uuid,
-    pub title: String,
-    pub description: Option<String>,
-    pub author_id: Uuid,
-    #[serde(skip_serializing)]
-    pub last_update: DateTime<Utc>,
-}
-
-impl_entity!(Book, "books");
-
-#[derive(Debug, Clone, FromRow, Serialize, Deserialize, Object)]
-pub(crate) struct Author {
-    pub author_id: Uuid,
-    pub name: String,
-}
-
-impl_entity!(Author, "authors");
+// use impl_entity! to quickly implement Entity trait for a struct

@@ -4,8 +4,5 @@ use poem_openapi::Tags;
 pub enum ApiTag {
     /// Index page
     Index,
-    /// Books
-    Book,
-    /// Authors
-    Author,
+    // define other tags here
 }

@@ -1,19 +1,22 @@
 use futures::TryStreamExt;
 use serde::Serialize;
 use sqlx::{
-    postgres::{PgPool, PgRow},
-    Execute, Postgres,
+    postgres::PgRow, Database, Execute, Postgres
 };
 use std::fmt::Display;
 
 use crate::model::entity::Entity;
 
-pub trait Repository {
-    fn get_conn_pool(&self) -> PgPool;
+pub trait Repository<DB>
+where
+    DB: Database
+{
+    fn get_conn_pool(&self) -> sqlx::Pool<DB>;
 }
 
-pub trait BasicRepositoryExt<E>: Repository
+pub trait BasicRepositoryExt<DB, E>: Repository<DB>
 where
+    DB: Database,
     E: for<'r> sqlx::FromRow<'r, PgRow> + Entity + Serialize + Send + Unpin,
 {
     /// Fetch one row from the database using condition: key-value pair.
