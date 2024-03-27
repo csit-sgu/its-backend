@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  poem-sqlx-service:
+    container_name: poem-sqlx-service
+    build: .
+    deploy:
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8000:8000"
+    environment:
+      - "DATABASE_URL=${DATABASE_URL?please set}"
+      - "LISTEN_ADDRESS=${LISTEN_ADDRESS:-0.0.0.0:8000}"
+      - "RUST_BACKTRACE=${BACKTRACE:-1}"
+      - "RUST_LOG=${LOG_LEVEL:-debug}"
+    tty: true
