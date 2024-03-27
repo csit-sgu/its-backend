@@ -1,0 +1,17 @@
+name: rustfmt 
+on: [ pull_request ]
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: install rustup
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rustup-init.sh
+          sh rustup-init.sh -y --default-toolchain none
+          rustup target add x86_64-unknown-linux-gnu
+      - name: check formatting
+        run: |
+          cargo fmt --check
