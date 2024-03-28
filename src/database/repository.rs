@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{Execute, MySqlPool, PgPool};
+use sqlx::{Execute, MySql, MySqlPool, PgPool};
 
 use crate::model::{dto::TaskType, entity::AggregatedTask};
 
@@ -14,7 +14,7 @@ impl AggregationRepo {
         page: usize,
         page_size: usize,
         task_types: Option<String>,
-        region_id: Option<String>,
+        region_id: Option<u32>,
         account_id: Option<u32>,
         division_id: Option<u32>,
         date_from: Option<DateTime<Utc>>,
@@ -114,20 +114,14 @@ impl AggregationRepo {
         builder.push(" OFFSET ");
         builder.push_bind((page * page_size) as u64);
 
-        let query = builder
-            .build_query_as::<AggregatedTask>();
-        let count_query = builder
-            .build_query_scalar();
-        
+        let query = builder.build_query_as::<AggregatedTask>();
+        let count_query = count_builder.build_query_scalar();
+
         log::debug!("Executing query:\n{}", count_query.sql());
-        let count: i64 = count_query
-            .fetch_one(&self.mysql_pool)
-            .await?;
+        let count: i64 = count_query.fetch_one(&self.mysql_pool).await?;
 
         log::debug!("Executing query:\n{}", query.sql());
-        let rows = query
-            .fetch_all(&self.mysql_pool)
-            .await?;
+        let rows = query.fetch_all(&self.mysql_pool).await?;
 
         let total_pages = count / page_size as i64;
         Ok((total_pages as usize, rows))

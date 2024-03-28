@@ -18,7 +18,7 @@ impl TasksRoute {
         page: Query<usize>,
         size: Query<usize>,
         task_types: Query<Option<String>>,
-        region_id: Query<Option<String>>,
+        region_id: Query<Option<u32>>,
         account_id: Query<Option<u32>>,
         division_id: Query<Option<u32>>,
         date_from: Query<Option<DateTime<Utc>>>,
