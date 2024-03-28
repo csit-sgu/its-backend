@@ -13,15 +13,15 @@ pub struct TasksRoute {
 impl TasksRoute {
     #[oai(path = "/tasks", method = "get", tag = ApiTag::Tasks)]
     pub async fn get_one(&self) -> Result<Json<Vec<AggregatedTask>>> {
-        let tasks = self
-            .ctx
-            .aggregation_repo
-            .aggregate_tasks()
-            .await
-            .map_err(|e| {
-                log::error!("{}", &e);
-                InternalServerError(e)
-            })?;
+        let tasks =
+            self.ctx
+                .aggregation_repo
+                .aggregate_tasks()
+                .await
+                .map_err(|e| {
+                    log::error!("{}", &e);
+                    InternalServerError(e)
+                })?;
         Ok(Json(tasks))
     }
 }

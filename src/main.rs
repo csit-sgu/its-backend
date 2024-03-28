@@ -11,6 +11,10 @@ use crate::{
     util::Context,
 };
 
+use api::route::login::LoginRoute;
+use poem::{
+    listener::TcpListener, middleware::Cors, EndpointExt, Route, Server,
+};
 use poem::{listener::TcpListener, Route, Server};
 use poem_openapi::OpenApiService;
 use sqlx::{MySqlPool, PgPool};
@@ -35,8 +39,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let ctx = Arc::new(Context { aggregation_repo });
-
-    let routes = (IndexRoute, TasksRoute { ctx });
+    let routes = (IndexRoute, TasksRoute { ctx }, LoginRoute);
 
     let listen_addr = std::env::var("LISTEN_ADDRESS")?;
     log::info!("{}", listen_addr);
@@ -47,7 +50,13 @@ async fn main() -> anyhow::Result<()> {
         OpenApiService::new(routes, "ITS", "1.0.0").server(api_addr);
     let ui = api_service.swagger_ui();
     Server::new(TcpListener::bind(listen_addr))
-        .run(Route::new().nest("/api", api_service).nest("/docs", ui))
+        .run(
+            Route::new()
+                .nest("/api", api_service)
+                .nest("/docs", ui)
+                .with(Cors::new()),
+        )
         .await?;
+
     Ok(())
 }

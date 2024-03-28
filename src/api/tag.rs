@@ -2,8 +2,10 @@ use poem_openapi::Tags;
 
 #[derive(Tags)]
 pub enum ApiTag {
-    /// Index page
+    /// Проверка
     Index,
     /// Задачи
     Tasks,
+    /// Авторизация
+    Login,
 }
