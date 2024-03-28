@@ -23,6 +23,8 @@ impl AggregationRepo {
     ) -> sqlx::Result<(usize, Vec<FlatTask>)> {
         let mut id_builder =
             sqlx::QueryBuilder::new("SELECT DISTINCT task_id FROM aggregated_tasks");
+        let mut count_builder =
+            sqlx::QueryBuilder::new("SELECT count(DISTINCT task_id) FROM aggregated_tasks");
 
         let mut curr_delim = " WHERE ";
         if let Some(types) = task_types {
@@ -34,27 +36,39 @@ impl AggregationRepo {
                 .collect();
             id_builder.push(curr_delim);
             id_builder.push("task_type IN (");
+            count_builder.push(curr_delim);
+            count_builder.push("task_type IN (");
             let mut types = types.into_iter();
             if let Some(t) = types.next() {
                 id_builder.push_bind(t.to_string());
+                count_builder.push_bind(t.to_string());
             }
             for t in types {
                 id_builder.push(", ");
                 id_builder.push_bind(t.to_string());
+                count_builder.push(", ");
+                count_builder.push_bind(t.to_string());
             }
             id_builder.push(")");
+            count_builder.push(")");
             curr_delim = " AND ";
         }
         if let Some(region_id) = region_id {
             id_builder.push(curr_delim);
             id_builder.push("region_id = ");
             id_builder.push_bind(region_id);
+            count_builder.push(curr_delim);
+            count_builder.push("region_id = ");
+            count_builder.push_bind(region_id);
             curr_delim = " AND ";
         }
         if let Some(account_id) = account_id {
             id_builder.push(curr_delim);
             id_builder.push("account_id = ");
             id_builder.push_bind(account_id);
+            count_builder.push(curr_delim);
+            count_builder.push("account_id = ");
+            count_builder.push_bind(account_id);
             curr_delim = " AND ";
         }
         if let Some(_division_id) = division_id {
@@ -64,28 +78,40 @@ impl AggregationRepo {
             id_builder.push(curr_delim);
             id_builder.push("created >= ");
             id_builder.push_bind(date_from);
+            count_builder.push(curr_delim);
+            count_builder.push("created >= ");
+            count_builder.push_bind(date_from);
             curr_delim = " AND ";
         }
         if let Some(date_to) = date_to {
             id_builder.push(curr_delim);
             id_builder.push("created <= ");
             id_builder.push_bind(date_to);
+            count_builder.push(curr_delim);
+            count_builder.push("created <= ");
+            count_builder.push_bind(date_to);
             curr_delim = " AND ";
         }
         if let Some(ids) = object_ids {
             let ids: Vec<u32> =
                 ids.split(',').map(|s| s.parse::<u32>().unwrap()).collect();
             id_builder.push(curr_delim);
-            id_builder.push("object_id IN (");
+            id_builder.push("object_id in (");
+            count_builder.push(curr_delim);
+            count_builder.push("object_id in (");
             let mut ids = ids.into_iter();
             if let Some(id) = ids.next() {
                 id_builder.push_bind(id);
+                count_builder.push_bind(id);
             }
             for id in ids {
                 id_builder.push(", ");
                 id_builder.push_bind(id);
+                count_builder.push(", ");
+                count_builder.push_bind(id);
             }
             id_builder.push(")");
+            count_builder.push(")");
         }
 
         id_builder.push(" LIMIT ");
@@ -111,10 +137,13 @@ impl AggregationRepo {
 
         let query = builder.build_query_as::<FlatTask>();
         log::debug!("Executing query:\n{}", query.sql());
-
         let rows = query.fetch_all(&self.mysql_pool).await?;
-        // let total_pages = count / page_size as i64;
-        Ok((0usize, rows))
+
+        let count_query = count_builder.build_query_scalar();
+        log::debug!("Executing query:\n{}", count_query.sql());
+        let count: i64 = count_query.fetch_one(&self.mysql_pool).await?;
+        let total_pages = count / page_size as i64;
+        Ok((total_pages as usize, rows))
     }
     
     // pub async fn detailed_task(
