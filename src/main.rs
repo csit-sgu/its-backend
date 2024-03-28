@@ -12,12 +12,12 @@ use crate::{
 };
 
 use api::route::login::LoginRoute;
-use std::time::Duration;
 use poem::{
     listener::TcpListener, middleware::Cors, EndpointExt, Route, Server,
 };
 use poem_openapi::OpenApiService;
 use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions};
+use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

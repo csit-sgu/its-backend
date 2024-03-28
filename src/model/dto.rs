@@ -24,10 +24,23 @@ pub struct ServiceObject {
     pub region: String,     // place_id -> places.id -> places.title
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display)]
 pub enum TaskType {
+    // #[serde(rename(deserialize = "App\\Models\\ServiceDesk\\Regular"))]
     Regular,
+    // #[serde(rename(deserialize = "App\\Models\\ServiceDesk\\Incident"))]
     Incident,
+}
+
+impl TryFrom<&str> for TaskType {
+    type Error = &'static str;
+    fn try_from(o: &str) -> Result<Self, Self::Error> {
+        match o {
+            "regular" => Ok(TaskType::Regular),
+            "incident" => Ok(TaskType::Incident),
+            _ => Err("wrong type of task"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -36,6 +49,7 @@ pub struct Task {
     pub transitions: Vec<Transition>,
     pub obj: ServiceObject,
     pub deadline: DateTime<Utc>,
+    pub task_type: TaskType,
 }
 
 #[derive(Debug, Display, Clone, Serialize, Deserialize, Enum)]
