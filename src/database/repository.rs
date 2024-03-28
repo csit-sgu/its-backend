@@ -130,4 +130,16 @@ impl AggregationRepo {
         let total_pages = count / page_size as i64;
         Ok((total_pages as usize, rows))
     }
+    
+    // pub async fn detailed_task(
+    //     &self,
+    //     id: u32,
+    // ) -> sqlx::Result<Option<DetailedTask>> {
+    //     sqlx::query_as::<_, DetailedTask>(
+    //         "SELECT * FROM detailed_tasks WHERE task_id = ?"
+    //     )
+    //         .bind(id)
+    //         .fetch_optional(&self.mysql_pool)
+    //         .await
+    // }
 }

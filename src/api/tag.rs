@@ -8,4 +8,6 @@ pub enum ApiTag {
     Tasks,
     /// Авторизация
     Login,
+    /// Объекты
+    Objects,
 }

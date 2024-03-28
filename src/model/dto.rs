@@ -5,29 +5,39 @@ use serde::{Deserialize, Serialize};
 
 use super::entity::AggregatedTask;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Location {
     pub lat: f32,
     pub lon: f32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Transition {
-    pub status: String, // task_transitions.task_stage_id -> task_stages.title
-    pub timestamp: DateTime<Utc>, // task_transitions.transitioned_at
+    pub status: String,
+    pub timestamp: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct ServiceObject {
-    pub place_id: u32,      // places.id
-    pub location: Location, // places.location
-    pub region: String,     // place_id -> places.id -> places.title
+    pub place_id: u32,
+    pub location: Location,
+    pub region: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display)]
+#[derive(Debug, Serialize, Deserialize, Clone, Object)]
+pub struct Task {
+    pub task_id: u32,
+    pub transitions: Vec<Transition>,
+    pub obj: ServiceObject,
+    pub deadline: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, Enum)]
 pub enum TaskType {
+    #[oai(rename = "regular")]
     #[display(fmt = "App\\Models\\ServiceDesk\\Regular")]
     Regular,
+    #[oai(rename = "incident")]
     #[display(fmt = "App\\Models\\ServiceDesk\\Incident")]
     Incident,
 }
@@ -41,15 +51,6 @@ impl TryFrom<&str> for TaskType {
             _ => Err("wrong type of task"),
         }
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Task {
-    pub task_id: u32,
-    pub transitions: Vec<Transition>,
-    pub obj: ServiceObject,
-    pub deadline: DateTime<Utc>,
-    pub task_type: TaskType,
 }
 
 #[derive(Debug, Display, Clone, Serialize, Deserialize, Enum)]

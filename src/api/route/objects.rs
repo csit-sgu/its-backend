@@ -2,17 +2,17 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 use poem::{error::InternalServerError, Result};
-use poem_openapi::{param::Query, param::Path, payload::Json, OpenApi};
+use poem_openapi::{param::Query, payload::Json, OpenApi};
 
 use crate::{api::ApiTag, model::dto::AggregatedTasksResp, util::Context};
 
-pub struct TasksRoute {
+pub struct ObjectsRoute {
     pub ctx: Arc<Context>,
 }
 
 #[OpenApi]
-impl TasksRoute {
-    #[oai(path = "/tasks", method = "get", tag = ApiTag::Tasks)]
+impl ObjectsRoute {
+    #[oai(path = "/objects", method = "get", tag = ApiTag::Objects)]
     pub async fn get_many(
         &self,
         page: Query<usize>,
@@ -49,25 +49,4 @@ impl TasksRoute {
             data: res.1,
         }))
     }
-
-    // #[oai(path = "/tasks/:id", method = "get", tag = ApiTag::Tasks)]
-    // pub async fn get_one(
-    //     &self,
-    //     id: Path<u32>,
-    // ) -> Result<Json<DetailedTask>> {
-    //     let res = self
-    //         .ctx
-    //         .aggregation_repo
-    //         .detailed_task(id)
-    //         .await
-    //         .map_err(|e| {
-    //             log::error!("{}", &e);
-    //             InternalServerError(e)
-    //         })?;
-    //     Ok(Json(AggregatedTasksResp {
-    //         total_pages: res.0,
-    //         data: res.1,
-    //     }))
-    // }
-
 }
