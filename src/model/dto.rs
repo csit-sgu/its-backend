@@ -3,37 +3,53 @@ use derive_more::Display;
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
 
+use super::entity::AggregatedTask;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Location {
-    lat: f32,
-    lon: f32,
+pub struct Location {
+    pub lat: f32,
+    pub lon: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Transition {
-    status: String, // task_transitions.task_stage_id -> task_stages.title
-    timestamp: DateTime<Utc>, // task_transitions.transitioned_at
+pub struct Transition {
+    pub status: String, // task_transitions.task_stage_id -> task_stages.title
+    pub timestamp: DateTime<Utc>, // task_transitions.transitioned_at
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct ServiceObject {
-    place_id: u32,      // places.id
-    location: Location, // places.location
-    region: String,     // regions.title
+pub struct ServiceObject {
+    pub place_id: u32,      // places.id
+    pub location: Location, // places.location
+    pub region: String,     // place_id -> places.id -> places.title
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-enum TaskType {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display)]
+pub enum TaskType {
+    #[display(fmt = "App\\Models\\ServiceDesk\\Regular")]
     Regular,
+    #[display(fmt = "App\\Models\\ServiceDesk\\Incident")]
     Incident,
 }
 
+impl TryFrom<&str> for TaskType {
+    type Error = &'static str;
+    fn try_from(o: &str) -> Result<Self, Self::Error> {
+        match o {
+            "regular" => Ok(TaskType::Regular),
+            "incident" => Ok(TaskType::Incident),
+            _ => Err("wrong type of task"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Task {
-    id: u32,
-    transitions: Vec<Transition>,
-    obj: ServiceObject,
-    deadline: DateTime<Utc>,
+pub struct Task {
+    pub task_id: u32,
+    pub transitions: Vec<Transition>,
+    pub obj: ServiceObject,
+    pub deadline: DateTime<Utc>,
+    pub task_type: TaskType,
 }
 
 #[derive(Debug, Display, Clone, Serialize, Deserialize, Enum)]
@@ -48,4 +64,10 @@ pub struct User {
     pub username: String,
     pub password: String,
     pub role: UserRole,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Object)]
+pub struct AggregatedTasksResp {
+    pub total_pages: usize,
+    pub data: Vec<AggregatedTask>,
 }

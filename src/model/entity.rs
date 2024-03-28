@@ -27,14 +27,18 @@ macro_rules! impl_entity {
 )]
 pub struct AggregatedTask {
     pub task_id: u32,
+    pub task_type: String,
+    pub deadline: DateTime<Utc>,
     pub account_id: u32,
-    pub assigner_id: u32,
-    pub taskable_type: String,
-    pub deadline_at: DateTime<Utc>,
-    pub object_id: u32,
+    pub created: DateTime<Utc>,
+    pub status: String,
+    pub timestamp: DateTime<Utc>,
     pub place_id: u32,
+    pub object_id: u32,
+    pub lat: f32,
+    pub lon: f32,
+    pub region: String,
     pub region_id: u32,
-    pub district_id: u32,
 }
 
 impl_entity!(AggregatedTask, "aggregated_tasks");
