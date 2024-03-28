@@ -8,7 +8,7 @@ use chrono::{DateTime, Utc};
     serde::Deserialize,
     poem_openapi::Object,
 )]
-pub struct AggregatedTask {
+pub struct FlatTask {
     pub task_id: u32,
     pub task_type: String,
     pub task_deadline: DateTime<Utc>,

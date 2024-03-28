@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::{Execute, MySqlPool, PgPool};
 
-use crate::model::{dto::TaskType, entity::AggregatedTask};
+use crate::model::{dto::TaskType, entity::FlatTask};
 
 pub struct AggregationRepo {
     pub mysql_pool: MySqlPool,
@@ -20,7 +20,7 @@ impl AggregationRepo {
         date_from: Option<DateTime<Utc>>,
         date_to: Option<DateTime<Utc>>,
         object_ids: Option<String>,
-    ) -> sqlx::Result<(usize, Vec<AggregatedTask>)> {
+    ) -> sqlx::Result<(usize, Vec<FlatTask>)> {
         let mut builder =
             sqlx::QueryBuilder::new("SELECT * FROM aggregated_tasks");
         let mut count_builder =
@@ -70,7 +70,7 @@ impl AggregationRepo {
             count_builder.push_bind(account_id);
             curr_delim = " AND ";
         }
-        if let Some(division_id) = division_id {
+        if let Some(_division_id) = division_id {
             todo!()
         }
         if let Some(date_from) = date_from {
@@ -118,7 +118,7 @@ impl AggregationRepo {
         builder.push(" OFFSET ");
         builder.push_bind((page * page_size) as u64);
 
-        let query = builder.build_query_as::<AggregatedTask>();
+        let query = builder.build_query_as::<FlatTask>();
         let count_query = count_builder.build_query_scalar();
 
         log::debug!("Executing query:\n{}", count_query.sql());

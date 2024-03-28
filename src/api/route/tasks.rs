@@ -2,9 +2,10 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 use poem::{error::InternalServerError, Result};
-use poem_openapi::{param::Query, param::Path, payload::Json, OpenApi};
+use poem_openapi::{param::Query, payload::Json, OpenApi};
 
 use crate::{api::ApiTag, model::dto::AggregatedTasksResp, util::Context};
+use crate::model::mapper::{MapperLike, TasksMapper};
 
 pub struct TasksRoute {
     pub ctx: Arc<Context>,
@@ -44,9 +45,10 @@ impl TasksRoute {
                 log::error!("{}", &e);
                 InternalServerError(e)
             })?;
+
         Ok(Json(AggregatedTasksResp {
             total_pages: res.0,
-            data: res.1,
+            data: TasksMapper::convert(res.1).collect(),
         }))
     }
 

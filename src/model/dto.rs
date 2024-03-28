@@ -3,8 +3,6 @@ use derive_more::Display;
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
 
-use super::entity::AggregatedTask;
-
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Location {
     pub lat: f32,
@@ -19,17 +17,11 @@ pub struct Transition {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct ServiceObject {
-    pub place_id: u32,
+    pub object_id: u32,
+    pub object_place_id: u32,
     pub location: Location,
-    pub region: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, Object)]
-pub struct Task {
-    pub task_id: u32,
-    pub transitions: Vec<Transition>,
-    pub obj: ServiceObject,
-    pub deadline: DateTime<Utc>,
+    pub region_id: u32,
+    pub region_title: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display, Enum)]
@@ -44,13 +36,25 @@ pub enum TaskType {
 
 impl TryFrom<&str> for TaskType {
     type Error = &'static str;
+
     fn try_from(o: &str) -> Result<Self, Self::Error> {
         match o {
             "regular" => Ok(TaskType::Regular),
             "incident" => Ok(TaskType::Incident),
+            "App\\Models\\ServiceDesk\\Incident" => Ok(TaskType::Incident),
+            "App\\Models\\ServiceDesk\\Regular" => Ok(TaskType::Regular),
             _ => Err("wrong type of task"),
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Object)]
+pub struct Task {
+    pub task_id: u32,
+    pub task_type: TaskType,
+    pub transitions: Vec<Transition>,
+    pub object: ServiceObject,
+    pub deadline: DateTime<Utc>,
 }
 
 #[derive(Debug, Display, Clone, Serialize, Deserialize, Enum)]
@@ -70,5 +74,5 @@ pub struct User {
 #[derive(Debug, Serialize, Deserialize, Clone, Object)]
 pub struct AggregatedTasksResp {
     pub total_pages: usize,
-    pub data: Vec<AggregatedTask>,
+    pub data: Vec<Task>,
 }
