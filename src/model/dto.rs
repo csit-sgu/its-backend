@@ -26,9 +26,9 @@ pub struct ServiceObject {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Display)]
 pub enum TaskType {
-    // #[serde(rename(deserialize = "App\\Models\\ServiceDesk\\Regular"))]
+    #[display(fmt = "App\\Models\\ServiceDesk\\Regular")]
     Regular,
-    // #[serde(rename(deserialize = "App\\Models\\ServiceDesk\\Incident"))]
+    #[display(fmt = "App\\Models\\ServiceDesk\\Incident")]
     Incident,
 }
 

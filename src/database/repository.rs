@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sqlx::{Execute, MySql, MySqlPool, PgPool};
+use sqlx::{Execute, MySqlPool, PgPool};
 
 use crate::model::{dto::TaskType, entity::AggregatedTask};
 
