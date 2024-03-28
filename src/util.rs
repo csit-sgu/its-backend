@@ -1,10 +1,8 @@
-use crate::database::{AuthorRepo, BookRepo};
 use derive_more::{Display, Error};
 
-/// TODO(vinc3nzo): move to `poem::Data`
+#[allow(unused)]
 pub struct Context {
-    pub book_repo: BookRepo,
-    pub author_repo: AuthorRepo,
+    // declare your repositories here
 }
 
 #[derive(Debug, Error, Display)]
