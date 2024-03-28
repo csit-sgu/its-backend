@@ -3,20 +3,27 @@ version: "3.8"
 services:
   mysqldb:
     image: mysql:8
+    container_name: mysqldb
     ports:
-      - 3306:3306
+      - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: example
-      MYSQL_DATABASE: db
+      - "MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD?please set}"
+      - "MYSQL_DATABASE=${MYSQL_DATABASE:-db}"
     volumes:
-      - .:/data
+      - ./db/mysql-data:/data
+      - ./data/init:/docker-entrypoint-initdb.d
   postgres:
-    image: postgres
+    image: postgres:16
+    container_name: postgres
     restart: always
+    ports:
+      - "5432:5432"
     environment:
-      POSTGRES_PASSWORD: example
-  poem-sqlx-service:
-    container_name: poem-sqlx-service
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD?please set}"
+    volumes:
+      - ./db/postgres-data:/var/lib/postgresql/data
+  main-service:
+    container_name: main-service
     build: .
     deploy:
       restart_policy:
@@ -24,8 +31,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - "DATABASE_URL=${DATABASE_URL?please set}"
+      - "POSTGRES_URL=${POSTGRES_URL?please set}"
+      - "MYSQL_URL=${MYSQL_URL?please set}"
       - "LISTEN_ADDRESS=${LISTEN_ADDRESS:-0.0.0.0:8000}"
       - "RUST_BACKTRACE=${BACKTRACE:-1}"
       - "RUST_LOG=${LOG_LEVEL:-debug}"
-    tty: true
+      - "API_URL=${API_URL:-http://localhost:8000/api}"

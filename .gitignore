@@ -5,3 +5,5 @@ Cargo.lock
 !.gitignore
 !.dockerignore
 !.env.example
+data/
+db/

@@ -4,5 +4,6 @@ use poem_openapi::Tags;
 pub enum ApiTag {
     /// Index page
     Index,
-    // define other tags here
+    /// Задачи
+    Tasks,
 }

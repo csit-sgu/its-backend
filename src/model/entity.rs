@@ -1,3 +1,5 @@
+use chrono::{DateTime, Utc};
+
 /// Trait for database entities.
 pub(crate) trait Entity {
     fn table_name() -> &'static str;
@@ -15,8 +17,24 @@ macro_rules! impl_entity {
     };
 }
 
-// define your entities here
-// NOTE: helpful derive macros:
-// Debug, Clone, sqlx::FromRow, serde::{Serialize, Deserialize}, poem_openapi::Object]
+#[derive(
+    Debug,
+    Clone,
+    sqlx::FromRow,
+    serde::Serialize,
+    serde::Deserialize,
+    poem_openapi::Object,
+)]
+pub struct AggregatedTask {
+    pub task_id: u32,
+    pub account_id: u32,
+    pub assigner_id: u32,
+    pub taskable_type: String,
+    pub deadline_at: DateTime<Utc>,
+    pub object_id: u32,
+    pub place_id: u32,
+    pub region_id: u32,
+    pub district_id: u32,
+}
 
-// use impl_entity! to quickly implement Entity trait for a struct
+impl_entity!(AggregatedTask, "aggregated_tasks");

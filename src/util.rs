@@ -1,8 +1,9 @@
 use derive_more::{Display, Error};
 
-#[allow(unused)]
+use crate::database::AggregationRepo;
+
 pub struct Context {
-    // declare your repositories here
+    pub aggregation_repo: AggregationRepo,
 }
 
 #[derive(Debug, Error, Display)]

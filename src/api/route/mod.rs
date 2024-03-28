@@ -1,3 +1,2 @@
-mod index;
-
-// re-export routes here
+pub mod index;
+pub mod tasks;
