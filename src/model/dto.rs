@@ -14,6 +14,7 @@ pub struct Location {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transition {
     pub status: String, // task_transitions.task_stage_id -> task_stages.title
+    
     pub timestamp: DateTime<Utc>, // task_transitions.transitioned_at
 }
 

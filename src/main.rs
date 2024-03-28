@@ -2,6 +2,7 @@ mod api;
 mod database;
 mod model;
 mod util;
+mod processing;
 
 use std::sync::Arc;
 
