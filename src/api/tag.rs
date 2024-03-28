@@ -10,4 +10,6 @@ pub enum ApiTag {
     Login,
     /// Объекты
     Objects,
+    /// Переходы статусов
+    Transitions,
 }

@@ -12,16 +12,6 @@ services:
     volumes:
       - ./db/mysql-data:/data
       - ./data:/docker-entrypoint-initdb.d
-  postgres:
-    image: postgres:16
-    container_name: postgres
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD?please set}"
-    volumes:
-      - ./db/postgres-data:/var/lib/postgresql/data
   main-service:
     container_name: main-service
     build: .
@@ -31,7 +21,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - "POSTGRES_URL=${POSTGRES_URL?please set}"
       - "MYSQL_URL=${MYSQL_URL?please set}"
       - "LISTEN_ADDRESS=${LISTEN_ADDRESS:-0.0.0.0:8000}"
       - "RUST_BACKTRACE=${BACKTRACE:-1}"

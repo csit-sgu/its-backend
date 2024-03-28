@@ -1,12 +1,24 @@
 use chrono::{DateTime, Utc};
-use sqlx::{Execute, MySqlPool, PgPool};
+use sqlx::{Execute, MySqlPool};
 
-use crate::model::{dto::TaskType, entity::FlatTask};
+use crate::database::core::{MySqlRepository, Repository};
+use crate::model::dto::TaskType;
+use crate::model::{entity::FlatTask, entity::TransitionView};
 
 pub struct AggregationRepo {
     pub mysql_pool: MySqlPool,
-    pub pg_pool: PgPool,
 }
+
+pub struct TransitionRepo {
+    pub mysql_pool: MySqlPool,
+}
+
+impl Repository for TransitionRepo {
+    fn get_conn_pool(&self) -> MySqlPool {
+        self.mysql_pool.clone()
+    }
+}
+impl MySqlRepository<TransitionView> for TransitionRepo {}
 
 impl AggregationRepo {
     pub async fn aggregate_tasks(
@@ -21,10 +33,12 @@ impl AggregationRepo {
         date_to: Option<DateTime<Utc>>,
         object_ids: Option<String>,
     ) -> sqlx::Result<(usize, Vec<FlatTask>)> {
-        let mut id_builder =
-            sqlx::QueryBuilder::new("SELECT DISTINCT task_id FROM aggregated_tasks");
-        let mut count_builder =
-            sqlx::QueryBuilder::new("SELECT count(DISTINCT task_id) FROM aggregated_tasks");
+        let mut id_builder = sqlx::QueryBuilder::new(
+            "SELECT DISTINCT task_id FROM aggregated_tasks",
+        );
+        let mut count_builder = sqlx::QueryBuilder::new(
+            "SELECT count(DISTINCT task_id) FROM aggregated_tasks",
+        );
 
         let mut curr_delim = " WHERE ";
         if let Some(types) = task_types {
@@ -122,9 +136,10 @@ impl AggregationRepo {
         let id_query = id_builder.build_query_scalar();
         log::debug!("Executing query:\n{}", id_query.sql());
         let ids: Vec<u32> = id_query.fetch_all(&self.mysql_pool).await?;
-        
-        let mut builder =
-            sqlx::QueryBuilder::new("SELECT * FROM aggregated_tasks WHERE task_id IN (");
+
+        let mut builder = sqlx::QueryBuilder::new(
+            "SELECT * FROM aggregated_tasks WHERE task_id IN (",
+        );
         let mut ids = ids.into_iter();
         if let Some(id) = ids.next() {
             builder.push_bind(id);
@@ -145,7 +160,7 @@ impl AggregationRepo {
         let total_pages = count / page_size as i64;
         Ok((total_pages as usize, rows))
     }
-    
+
     // pub async fn detailed_task(
     //     &self,
     //     id: u32,
