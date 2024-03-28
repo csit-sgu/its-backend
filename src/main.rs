@@ -3,7 +3,10 @@ mod database;
 mod model;
 mod util;
 
-use poem::{listener::TcpListener, Route, Server};
+use api::route::login::LoginRoute;
+use poem::{
+    listener::TcpListener, middleware::Cors, EndpointExt, Route, Server,
+};
 use poem_openapi::OpenApiService;
 use sqlx::PgPool;
 
@@ -14,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
 
     let db_url = std::env::var("DATABASE_URL")?;
     log::info!("Establishing database connection...");
-    let pool = PgPool::connect(&db_url).await?;
+    // let pool = PgPool::connect(&db_url).await?;
     log::info!("Connected to the database");
 
     // initialize your app's context here
@@ -23,16 +26,24 @@ async fn main() -> anyhow::Result<()> {
 
     // define your `routes` tuple here
 
-    let addr = std::env::var("LISTEN_ADDRESS")?;
+    let addr =
+        std::env::var("LISTEN_ADDRESS").unwrap_or("0.0.0.0:8000".to_string());
     let mut api_endpoint = addr.clone();
     api_endpoint.push_str("/api");
 
     // replace empty tuple with the `routes` tuple
-    let api_service =
-        OpenApiService::new((), "ITS", "1.0.0").server(api_endpoint);
+    let api_service = OpenApiService::new(LoginRoute, "ITS", "1.0.0")
+        .server("http://localhost:8000/api");
     let ui = api_service.swagger_ui();
-    Server::new(TcpListener::bind(addr))
-        .run(Route::new().nest("/api", api_service).nest("/docs", ui))
+    Server::new(TcpListener::bind("0.0.0.0:8000"))
+        .run(
+            Route::new()
+                .nest("/api", api_service)
+                .nest("/docs", ui)
+                .with(
+                    Cors::new()
+                ),
+        )
         .await?;
     Ok(())
 }
