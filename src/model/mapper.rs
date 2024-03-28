@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::{dto::{Location, ServiceObject, Task, Transition}, entity::FlatTask};
+use super::{dto::{Location, ServiceObject, StageInfo, Task, Transition}, entity::FlatTask};
 
 pub trait MapperLike {
     type FromType;
@@ -41,6 +41,12 @@ impl MapperLike for TasksMapper {
                 task.transitions.push(Transition {
                     status: t.task_transition_title,
                     timestamp: t.task_transitioned_at,
+                    stage_info: StageInfo {
+                        is_start: t.task_stage_is_start, 
+                        is_fulfilled: t.task_stage_is_fulfilled,
+                        is_closed: t.task_stage_is_closed,
+                        is_cancelled: t.task_stage_is_cancelled,
+                    },
                 });
             }
         }

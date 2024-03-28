@@ -10,9 +10,18 @@ pub struct Location {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct StageInfo {
+    pub is_start: bool,
+    pub is_fulfilled: bool,
+    pub is_closed: bool,
+    pub is_cancelled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Transition {
     pub status: String,
     pub timestamp: DateTime<Utc>,
+    pub stage_info: StageInfo,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
