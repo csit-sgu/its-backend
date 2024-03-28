@@ -21,3 +21,11 @@ CREATE VIEW aggregated_tasks AS (
     JOIN places p ON p.id = obj.place_id
     JOIN regions r ON r.id = p.region_id
 );
+
+CREATE VIEW transition_view AS (
+    SELECT tt.id, tt.task_id, u.name as transitioned_by, tt.transitioned_at, ts.title as stage_title
+    FROM task_transitions as tt
+    INNER JOIN task_stages as ts ON tt.task_stage_id = ts.id
+    INNER JOIN users as u on tt.transitioned_by = u.id
+    ORDER BY tt.transitioned_at
+);

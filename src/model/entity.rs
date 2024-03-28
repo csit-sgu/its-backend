@@ -41,4 +41,21 @@ pub struct AggregatedTask {
     pub region_id: u32,
 }
 
+#[derive(
+    Debug,
+    Clone,
+    sqlx::FromRow,
+    serde::Serialize,
+    serde::Deserialize,
+    poem_openapi::Object,
+)]
+pub struct TransitionView {
+    id: u32,
+    task_id: u32,
+    transitioned_by: String,
+    transitioned_at: DateTime<Utc>,
+    stage_title: String,
+}
+
 impl_entity!(AggregatedTask, "aggregated_tasks");
+impl_entity!(TransitionView, "transition_view");

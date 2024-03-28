@@ -1,13 +1,24 @@
 use chrono::{DateTime, Utc};
 use sqlx::{Execute, MySqlPool, PgPool};
 
+use crate::database::core::{MySqlRepository, Repository};
+use crate::model::entity::TransitionView;
 use crate::model::{dto::TaskType, entity::AggregatedTask};
 
 pub struct AggregationRepo {
     pub mysql_pool: MySqlPool,
-    pub pg_pool: PgPool,
 }
 
+pub struct TransitionRepo {
+    pub mysql_pool: MySqlPool,
+}
+
+impl Repository for TransitionRepo {
+    fn get_conn_pool(&self) -> MySqlPool {
+        self.mysql_pool.clone()
+    }
+}
+impl MySqlRepository<TransitionView> for TransitionRepo {}
 
 impl AggregationRepo {
     pub async fn aggregate_tasks(

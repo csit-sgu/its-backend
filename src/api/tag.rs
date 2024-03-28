@@ -8,4 +8,5 @@ pub enum ApiTag {
     Tasks,
     /// Авторизация
     Login,
+    Transitions,
 }

@@ -12,9 +12,17 @@ pub struct Location {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StageInfo {
+    is_start: bool,
+    is_fulfilled: bool,
+    is_closed: bool,
+    is_cancelled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transition {
     pub status: String, // task_transitions.task_stage_id -> task_stages.title
-    
+    pub stage_info: StageInfo,
     pub timestamp: DateTime<Utc>, // task_transitions.transitioned_at
 }
 
@@ -48,7 +56,7 @@ impl TryFrom<&str> for TaskType {
 pub struct Task {
     pub task_id: u32,
     pub transitions: Vec<Transition>,
-    pub obj: ServiceObject,
+    pub object: ServiceObject,
     pub deadline: DateTime<Utc>,
     pub task_type: TaskType,
 }

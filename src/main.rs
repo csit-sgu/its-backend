@@ -1,14 +1,16 @@
 mod api;
 mod database;
 mod model;
-mod util;
 mod processing;
+mod util;
 
 use std::sync::Arc;
 
 use crate::{
-    api::route::{index::IndexRoute, tasks::TasksRoute},
-    database::AggregationRepo,
+    api::route::{
+        index::IndexRoute, tasks::TasksRoute, transitions::TransitionRoute,
+    },
+    database::{AggregationRepo, TransitionRepo},
     util::Context,
 };
 
@@ -17,7 +19,7 @@ use poem::{
     listener::TcpListener, middleware::Cors, EndpointExt, Route, Server,
 };
 use poem_openapi::OpenApiService;
-use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions};
+use sqlx::mysql::MySqlPoolOptions;
 use std::time::Duration;
 
 #[tokio::main]
@@ -26,27 +28,29 @@ async fn main() -> anyhow::Result<()> {
     dotenv::dotenv()?;
 
     let mysql_url = std::env::var("MYSQL_URL")?;
-    let pg_url = std::env::var("POSTGRES_URL")?;
     log::info!("Establishing MySQL database connection...");
     let mysql_pool = MySqlPoolOptions::new()
         .max_lifetime(Duration::from_secs(12000))
         .connect(&mysql_url)
         .await?;
     log::info!("Connected to MySQL");
-    log::info!("Establishing Postgres database connection...");
-    let pg_pool = PgPoolOptions::new()
-        .max_lifetime(Duration::from_secs(12000))
-        .connect(&pg_url)
-        .await?;
-    log::info!("Connected to Postgres");
 
     let aggregation_repo = AggregationRepo {
-        mysql_pool,
-        pg_pool,
+        mysql_pool: mysql_pool.clone(),
     };
 
-    let ctx = Arc::new(Context { aggregation_repo });
-    let routes = (IndexRoute, TasksRoute { ctx }, LoginRoute);
+    let transition_repo = TransitionRepo { mysql_pool };
+
+    let ctx = Arc::new(Context {
+        aggregation_repo,
+        transition_repo,
+    });
+    let routes = (
+        IndexRoute,
+        TasksRoute { ctx: ctx.clone() },
+        LoginRoute,
+        TransitionRoute { ctx },
+    );
 
     let listen_addr = std::env::var("LISTEN_ADDRESS")?;
     log::info!("{}", listen_addr);
