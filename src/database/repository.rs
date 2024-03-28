@@ -8,6 +8,7 @@ pub struct AggregationRepo {
     pub pg_pool: PgPool,
 }
 
+
 impl AggregationRepo {
     pub async fn aggregate_tasks(
         &self,
