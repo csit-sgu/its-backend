@@ -2,7 +2,6 @@ use chrono::{DateTime, Utc};
 use derive_more::Display;
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
-use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Location {
@@ -38,7 +37,7 @@ struct Task {
 }
 
 #[derive(Debug, Display, Clone, Serialize, Deserialize, Enum)]
-enum UserRole {
+pub enum UserRole {
     Admin,
     User,
 }

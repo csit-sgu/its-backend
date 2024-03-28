@@ -1,14 +1,11 @@
-use poem::Result;
-use poem_openapi::param::Query;
-use poem_openapi::{payload::PlainText, OpenApi};
+use poem::{Response, Result};
+use poem_openapi::{payload::Json, payload::PlainText, OpenApi};
 
 use crate::api::ApiTag;
 use crate::model::dto::User;
 use crate::util::EmptyError;
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
-use poem::Response;
-use poem_openapi::payload::Json;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use std::collections::BTreeMap;

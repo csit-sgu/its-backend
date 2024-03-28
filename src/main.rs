@@ -15,7 +15,6 @@ use api::route::login::LoginRoute;
 use poem::{
     listener::TcpListener, middleware::Cors, EndpointExt, Route, Server,
 };
-use poem::{listener::TcpListener, Route, Server};
 use poem_openapi::OpenApiService;
 use sqlx::{MySqlPool, PgPool};
 
