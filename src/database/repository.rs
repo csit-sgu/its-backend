@@ -27,8 +27,12 @@ impl AggregationRepo {
             sqlx::QueryBuilder::new("SELECT count(*) FROM aggregated_tasks");
         let mut curr_delim = " WHERE ";
         if let Some(types) = task_types {
-            let types: Vec<TaskType> =
-                types.split(",").map(|e| e.try_into().unwrap()).collect();
+            let types: Vec<TaskType> = types
+                .split(",")
+                .map(|e| e.try_into())
+                .filter(Result::is_ok)
+                .map(|e| e.unwrap())
+                .collect();
             builder.push(curr_delim);
             builder.push("task_type IN (");
             count_builder.push(curr_delim);
