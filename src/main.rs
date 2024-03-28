@@ -12,11 +12,12 @@ use crate::{
 };
 
 use api::route::login::LoginRoute;
+use std::time::Duration;
 use poem::{
     listener::TcpListener, middleware::Cors, EndpointExt, Route, Server,
 };
 use poem_openapi::OpenApiService;
-use sqlx::{MySqlPool, PgPool};
+use sqlx::{mysql::MySqlPoolOptions, postgres::PgPoolOptions};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -26,10 +27,16 @@ async fn main() -> anyhow::Result<()> {
     let mysql_url = std::env::var("MYSQL_URL")?;
     let pg_url = std::env::var("POSTGRES_URL")?;
     log::info!("Establishing MySQL database connection...");
-    let mysql_pool = MySqlPool::connect(&mysql_url).await?;
+    let mysql_pool = MySqlPoolOptions::new()
+        .max_lifetime(Duration::from_secs(12000))
+        .connect(&mysql_url)
+        .await?;
     log::info!("Connected to MySQL");
     log::info!("Establishing Postgres database connection...");
-    let pg_pool = PgPool::connect(&pg_url).await?;
+    let pg_pool = PgPoolOptions::new()
+        .max_lifetime(Duration::from_secs(12000))
+        .connect(&pg_url)
+        .await?;
     log::info!("Connected to Postgres");
 
     let aggregation_repo = AggregationRepo {

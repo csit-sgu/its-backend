@@ -1,4 +1,3 @@
-use futures::TryStreamExt;
 use sqlx::{MySqlPool, PgPool};
 
 use crate::model::entity::AggregatedTask;
@@ -9,21 +8,19 @@ pub struct AggregationRepo {
 }
 
 impl AggregationRepo {
-    pub async fn aggregate_tasks(&self) -> sqlx::Result<Vec<AggregatedTask>> {
-        // wrong column names
+    pub async fn aggregate_tasks(&self, page: usize, page_size: usize) -> sqlx::Result<(usize, Vec<AggregatedTask>)> {
         let query = sqlx::query_as::<_, AggregatedTask>(
-            r#"
-            SELECT
-                t.task_id, t.account_id, t.assigner_id, t.taskable_type, t.deadline_at,
-                so.object_id, so.place_id, so.account_id,
-                p.place_id, p.region_id, p.district_id
-            FROM tasks AS t
-            JOIN service_object_task sot ON sot.task_id = t.task_id
-            JOIN service_objects so ON so.object_id = sot.object_id
-            JOIN places p ON p.region_id = so.object_id
-            "#,
-        );
-        let rows = query.fetch(&self.mysql_pool);
-        rows.try_collect().await
+            "SELECT * FROM aggregated_tasks LIMIT ? OFFSET ?"
+        )
+            .bind(page_size as u64)
+            .bind((page * page_size) as u64);
+
+        let count_query: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM aggregated_tasks")
+            .fetch_one(&self.mysql_pool)
+            .await?;
+
+        let rows = query.fetch_all(&self.mysql_pool).await?;
+        let total_pages = count_query / page_size as i64;
+        Ok((total_pages as usize, rows))
     }
 }

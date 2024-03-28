@@ -11,7 +11,7 @@ services:
       - "MYSQL_DATABASE=${MYSQL_DATABASE:-db}"
     volumes:
       - ./db/mysql-data:/data
-      - ./data/init:/docker-entrypoint-initdb.d
+      - ./data:/docker-entrypoint-initdb.d
   postgres:
     image: postgres:16
     container_name: postgres
