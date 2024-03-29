@@ -1,13 +1,6 @@
-use crate::model::dto::Task;
+use crate::model::dto::{ExtractedFeatures, Task};
 
 pub struct MetricExtractor;
-
-struct ExtractedFeatures {
-    regularity_score: i64,
-    speed_score: i64,
-    remission_rate: i64,
-    fallback_rate: i64,
-}
 
 impl ExtractedFeatures {
     pub fn new(

@@ -161,6 +161,7 @@ impl AggregationRepo {
         Ok((total_pages as usize, rows))
     }
 
+
     // pub async fn detailed_task(
     //     &self,
     //     id: u32,

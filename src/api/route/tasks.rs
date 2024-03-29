@@ -46,10 +46,15 @@ impl TasksRoute {
                 InternalServerError(e)
             })?;
 
-        Ok(Json(AggregatedTasksResp {
+        let mut aggregated_data = AggregatedTasksResp {
             total_pages: res.0,
             data: TasksMapper::convert(res.1).collect(),
-        }))
+            stats: None,
+        };
+
+        aggregated_data.stats =
+            Some(self.ctx.metric_extractor.extract(&aggregated_data.data));
+        Ok(Json(aggregated_data))
     }
 
     // #[oai(path = "/tasks/:id", method = "get", tag = ApiTag::Tasks)]

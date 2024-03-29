@@ -9,9 +9,7 @@ use std::sync::Arc;
 use crate::{
     api::route::{
         index::IndexRoute, tasks::TasksRoute, transitions::TransitionRoute,
-    },
-    database::{AggregationRepo, TransitionRepo},
-    util::Context,
+    }, database::{AggregationRepo, TransitionRepo}, processing::extractor::MetricExtractor, util::Context
 };
 
 use api::route::login::LoginRoute;
@@ -40,10 +38,13 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let transition_repo = TransitionRepo { mysql_pool };
+    let metric_extractor = MetricExtractor;
 
     let ctx = Arc::new(Context {
         aggregation_repo,
         transition_repo,
+        metric_extractor
+        
     });
     let routes = (
         IndexRoute,

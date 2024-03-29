@@ -43,6 +43,14 @@ pub enum TaskType {
     Incident,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct ExtractedFeatures {
+    pub regularity_score: i64,
+    pub speed_score: i64,
+    pub remission_rate: i64,
+    pub fallback_rate: i64,
+}
+
 impl TryFrom<&str> for TaskType {
     type Error = &'static str;
 
@@ -84,4 +92,5 @@ pub struct User {
 pub struct AggregatedTasksResp {
     pub total_pages: usize,
     pub data: Vec<Task>,
+    pub stats: Option<ExtractedFeatures>,
 }
