@@ -29,8 +29,10 @@ pub struct FlatTask {
     pub task_type: String,
     pub task_deadline_at: DateTime<Utc>,
     pub account_id: u32,
+    pub task_transition_id: u32,
     pub task_transitioned_at: DateTime<Utc>,
     pub task_transition_title: String,
+    pub task_stage_id: u32,
     pub task_stage_is_start: bool,
     pub task_stage_is_fulfilled: bool,
     pub task_stage_is_closed: bool,
@@ -95,3 +97,17 @@ pub struct TransitionView {
 }
 
 impl_entity!(TransitionView, "transition_view");
+
+#[derive(
+    Debug,
+    Clone,
+    sqlx::FromRow,
+    serde::Serialize,
+    serde::Deserialize,
+    poem_openapi::Object,
+)]
+pub struct TaskStageTransition {
+    pub id: u32,
+    pub current_stage_id: u32,
+    pub next_stage_id: u32,
+}

@@ -6,7 +6,7 @@ use poem::{error::InternalServerError, Result};
 use poem_openapi::param::Path;
 use poem_openapi::{param::Query, payload::Json, OpenApi};
 
-use crate::model::dto::DetailedTask;
+use crate::model::dto::{DetailedTask, Task, Transition};
 use crate::model::mapper::{BatchMapperLike, DetailedTaskMapper, MapperLike, TasksMapper};
 use crate::util::EmptyError;
 use crate::{api::ApiTag, model::dto::AggregatedTasksResp, util::Context};
@@ -43,6 +43,7 @@ impl TasksRoute {
                 date_from.0,
                 date_to.0,
                 object_ids.0,
+                None,
             )
             .await
             .map_err(|e| {
@@ -75,5 +76,56 @@ impl TasksRoute {
             Some(data) => Ok(Json(data)),
             None => Err(NotFound(EmptyError))
         }
+    }
+
+    #[oai(path = "/tasks/:id/stages/traverse", method = "get", tag = ApiTag::Stages)]
+    pub async fn traverse(
+        &self,
+        id: Path<u32>,
+    ) -> Result<Json<Vec<String>>> {
+        let (_, task) = self
+            .ctx
+            .aggregation_repo
+            .aggregate_tasks(
+                0,
+                100,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                Some(id.0),
+            )
+            .await
+            .map_err(|e| {
+                log::error!("{}", &e);
+                InternalServerError(e)
+            })?;
+
+        if task.len() < 1 {
+            return Err(NotFound(EmptyError))
+        }
+        
+        let task: Task = TasksMapper::convert_many(task).next().unwrap();
+        let st_transition = task.transitions
+            .iter()
+            .find(|tr| tr.stage_info.is_start)
+            .ok_or(InternalServerError(EmptyError))?;
+        let start_id = st_transition.stage_info.id;
+        let stage_ids = self.ctx
+            .aggregation_repo
+            .traverse(start_id)
+            .await
+            .map_err(InternalServerError)?;
+        log::info!("Got here #1");
+        let stage_titles = self.ctx
+            .aggregation_repo
+            .get_stage_names(stage_ids)
+            .await
+            .map_err(InternalServerError)?;
+        log::info!("Got here #2");
+        Ok(Json(stage_titles))
     }
 }

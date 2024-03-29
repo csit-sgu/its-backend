@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use sqlx::{Execute, MySqlPool};
 
 use crate::database::core::{MySqlRepository, Repository};
+use crate::model::entity::TaskStageTransition;
 use crate::model::{
     entity::FlatTask,
     entity::FlatDetailedTask,
@@ -37,6 +38,7 @@ impl AggregationRepo {
         date_from: Option<DateTime<Utc>>,
         date_to: Option<DateTime<Utc>>,
         object_ids: Option<String>,
+        task_id: Option<u32>,
     ) -> sqlx::Result<(usize, Vec<FlatTask>)> {
         let mut id_builder = sqlx::QueryBuilder::new(
             "SELECT DISTINCT task_id FROM aggregated_tasks",
@@ -111,6 +113,15 @@ impl AggregationRepo {
             count_builder.push_bind(date_to);
             curr_delim = " AND ";
         }
+        if let Some(task_id) = task_id {
+            id_builder.push(curr_delim);
+            id_builder.push("task_id = ");
+            id_builder.push_bind(task_id);
+            count_builder.push(curr_delim);
+            count_builder.push("task_id = ");
+            count_builder.push_bind(task_id);
+            curr_delim = " AND ";
+        }
         if let Some(ids) = object_ids {
             let ids: Vec<u32> =
                 ids.split(',').map(|s| s.parse::<u32>().unwrap()).collect();
@@ -176,5 +187,48 @@ impl AggregationRepo {
             .bind(id)
             .fetch_optional(&self.mysql_pool)
             .await
+    }
+
+    pub async fn traverse(
+        &self,
+        start_id: u32,
+    ) -> sqlx::Result<Vec<u32>> {
+        let query_text = r#"
+            SELECT *
+            FROM task_stage_transitions AS tst
+            WHERE tst.current_stage_id = ? 
+        "#;
+
+        let mut res = vec![start_id];
+        let mut curr_id = start_id;
+        loop {
+            let record = sqlx::query_as::<_, TaskStageTransition>(query_text)
+                .bind(curr_id)
+                .fetch_optional(&self.mysql_pool)
+                .await?;
+            match record {
+                Some(tr) => {
+                    log::debug!("{:?}", tr);
+                    curr_id = tr.next_stage_id;
+                    res.push(tr.next_stage_id);
+                },
+                None => break,
+            }
+        }
+        Ok(res)
+    }
+
+    pub async fn get_stage_names(
+        &self,
+        stage_ids: Vec<u32>
+    ) -> sqlx::Result<Vec<String>> {
+        let mut titles = vec![];
+        for stage_id in stage_ids.into_iter() {
+            let query = sqlx::query_scalar("SELECT title FROM task_stages WHERE id = ?")
+                .bind(stage_id);
+            let stage_title: String = query.fetch_one(&self.mysql_pool).await?;
+            titles.push(stage_title);
+        }
+        Ok(titles)
     }
 }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{
-    dto::{Account, DetailedServiceObject, DetailedTask, DetailedTransition, Location, ServiceObject, StageInfo, Task, Transition},
+    dto::{Account, DetailedServiceObject, DetailedTask, DetailedTransition, Location, MinStageInfo, ServiceObject, StageInfo, Task, Transition},
     entity::{FlatDetailedTask, FlatTask},
 };
 
@@ -56,9 +56,11 @@ impl BatchMapperLike for TasksMapper {
 
             if let Some(task) = m.get_mut(&t.task_id) {
                 task.transitions.push(Transition {
+                    id: t.task_transition_id,
                     status: t.task_transition_title,
                     transitioned_at: t.task_transitioned_at,
                     stage_info: StageInfo {
+                        id: t.task_stage_id,
                         is_start: t.task_stage_is_start,
                         is_fulfilled: t.task_stage_is_fulfilled,
                         is_closed: t.task_stage_is_closed,
@@ -113,7 +115,7 @@ impl MapperLike for DetailedTaskMapper {
             new_res.transitions.push(DetailedTransition {
                 status: t.task_transition_title,
                 transitioned_at: t.task_transitioned_at,
-                stage_info: StageInfo {
+                stage_info: MinStageInfo { 
                     is_start: t.task_stage_is_start,
                     is_fulfilled: t.task_stage_is_fulfilled,
                     is_closed: t.task_stage_is_closed,

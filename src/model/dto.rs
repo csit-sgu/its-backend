@@ -11,6 +11,15 @@ pub struct Location {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct StageInfo {
+    pub id: u32,
+    pub is_start: bool,
+    pub is_fulfilled: bool,
+    pub is_closed: bool,
+    pub is_cancelled: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct MinStageInfo {
     pub is_start: bool,
     pub is_fulfilled: bool,
     pub is_closed: bool,
@@ -19,6 +28,7 @@ pub struct StageInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Transition {
+    pub id: u32,
     pub status: String,
     pub transitioned_at: DateTime<Utc>,
     pub stage_info: StageInfo,
@@ -90,7 +100,7 @@ pub struct DetailedServiceObject {
 pub struct DetailedTransition {
     pub status: String,
     pub transitioned_at: DateTime<Utc>,
-    pub stage_info: StageInfo,
+    pub stage_info: MinStageInfo,
     pub transitioned_by_id: u32,
 }
 
@@ -122,5 +132,10 @@ pub struct User {
 #[derive(Debug, Serialize, Deserialize, Clone, Object)]
 pub struct AggregatedTasksResp {
     pub total_pages: usize,
+    pub data: Vec<Task>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Object)]
+pub struct StageTransitionsResp {
     pub data: Vec<Task>,
 }

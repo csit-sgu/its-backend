@@ -12,4 +12,6 @@ pub enum ApiTag {
     Objects,
     /// Переходы статусов
     Transitions,
+    /// Статусы
+    Stages,
 }
