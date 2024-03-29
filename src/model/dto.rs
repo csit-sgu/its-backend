@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use derive_more::Display;
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
+use chrono::TimeDelta;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Location {
@@ -27,6 +28,12 @@ pub struct MinStageInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct TimeInfo {
+    pub period: u32,
+    pub delta: u32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Transition {
     pub id: u32,
     pub status: String,
@@ -37,8 +44,10 @@ pub struct Transition {
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct ServiceObject {
     pub object_id: u32,
+    pub object_type_id: u32,
     pub object_place_id: u32,
     pub location: Location,
+    pub time_info: TimeInfo,
     pub region_id: u32,
     pub region_title: String,
 }
@@ -51,6 +60,14 @@ pub enum TaskType {
     #[oai(rename = "incident")]
     #[display(fmt = "App\\Models\\ServiceDesk\\Incident")]
     Incident,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct ExtractedFeatures {
+    pub regularity_score: i64,
+    pub speed_score: i64,
+    pub remission_rate: i64,
+    pub fallback_rate: i64,
 }
 
 impl TryFrom<&str> for TaskType {
@@ -134,6 +151,7 @@ pub struct User {
 pub struct AggregatedTasksResp {
     pub total_pages: usize,
     pub data: Vec<Task>,
+    pub stats: Option<ExtractedFeatures>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Object)]

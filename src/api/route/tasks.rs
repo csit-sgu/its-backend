@@ -6,8 +6,10 @@ use poem::{error::InternalServerError, Result};
 use poem_openapi::param::Path;
 use poem_openapi::{param::Query, payload::Json, OpenApi};
 
-use crate::model::dto::{DetailedTask, Task, Transition};
-use crate::model::mapper::{BatchMapperLike, DetailedTaskMapper, MapperLike, TasksMapper};
+use crate::model::dto::DetailedTask;
+use crate::model::mapper::{
+    BatchMapperLike, DetailedTaskMapper, MapperLike, TasksMapper,
+};
 use crate::util::EmptyError;
 use crate::{api::ApiTag, model::dto::AggregatedTasksResp, util::Context};
 
@@ -51,17 +53,19 @@ impl TasksRoute {
                 InternalServerError(e)
             })?;
 
-        Ok(Json(AggregatedTasksResp {
+        let mut aggregated_data = AggregatedTasksResp {
             total_pages: res.0,
             data: TasksMapper::convert_many(res.1).collect(),
-        }))
+            stats: None,
+        };
+
+        aggregated_data.stats =
+            Some(self.ctx.metric_extractor.extract(&aggregated_data.data));
+        Ok(Json(aggregated_data))
     }
 
     #[oai(path = "/tasks/:id", method = "get", tag = ApiTag::Tasks)]
-    pub async fn get_one(
-        &self,
-        id: Path<u32>,
-    ) -> Result<Json<DetailedTask>> {
+    pub async fn get_one(&self, id: Path<u32>) -> Result<Json<DetailedTask>> {
         let res = self
             .ctx
             .aggregation_repo
@@ -74,7 +78,7 @@ impl TasksRoute {
 
         match DetailedTaskMapper::convert(res) {
             Some(data) => Ok(Json(data)),
-            None => Err(NotFound(EmptyError))
+            None => Err(NotFound(EmptyError)),
         }
     }
 

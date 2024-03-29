@@ -11,6 +11,7 @@ use crate::{
         index::IndexRoute, tasks::TasksRoute, transitions::TransitionRoute,
     },
     database::{AggregationRepo, TransitionRepo},
+    processing::extractor::MetricExtractor,
     util::Context,
 };
 
@@ -40,10 +41,12 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let transition_repo = TransitionRepo { mysql_pool };
+    let metric_extractor = MetricExtractor;
 
     let ctx = Arc::new(Context {
         aggregation_repo,
         transition_repo,
+        metric_extractor,
     });
     let routes = (
         IndexRoute,

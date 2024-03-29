@@ -4,10 +4,8 @@ use sqlx::{Execute, MySqlPool};
 use crate::database::core::{MySqlRepository, Repository};
 use crate::model::entity::TaskStageTransition;
 use crate::model::{
-    entity::FlatTask,
-    entity::FlatDetailedTask,
+    dto::TaskType, entity::FlatDetailedTask, entity::FlatTask,
     entity::TransitionView,
-    dto::TaskType,
 };
 
 pub struct AggregationRepo {
@@ -187,11 +185,11 @@ impl AggregationRepo {
         id: u32,
     ) -> sqlx::Result<Option<FlatDetailedTask>> {
         sqlx::query_as::<_, FlatDetailedTask>(
-            "SELECT * FROM detailed_tasks WHERE task_id = ?"
+            "SELECT * FROM detailed_tasks WHERE task_id = ?",
         )
-            .bind(id)
-            .fetch_optional(&self.mysql_pool)
-            .await
+        .bind(id)
+        .fetch_optional(&self.mysql_pool)
+        .await
     }
 
     pub async fn traverse(
