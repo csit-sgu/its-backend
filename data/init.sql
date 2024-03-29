@@ -53,7 +53,7 @@ CREATE VIEW detailed_tasks AS (
         obj.id AS object_id,
         obj.place_id AS object_place_id,
         obj.title AS object_title,
-        obj.subtitle AS object_subtitle,
+        obj.sub_title AS object_subtitle,
         st_latitude(p.location) AS place_lat,
         st_longitude(p.location) AS place_lon,
         r.id AS region_id,

@@ -1,12 +1,14 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+use poem::error::NotFound;
 use poem::{error::InternalServerError, Result};
 use poem_openapi::param::Path;
 use poem_openapi::{param::Query, payload::Json, OpenApi};
 
 use crate::model::dto::DetailedTask;
-use crate::model::mapper::{DetailedTaskMapper, MapperLike, TasksMapper};
+use crate::model::mapper::{BatchMapperLike, DetailedTaskMapper, MapperLike, TasksMapper};
+use crate::util::EmptyError;
 use crate::{api::ApiTag, model::dto::AggregatedTasksResp, util::Context};
 
 pub struct TasksRoute {
@@ -50,7 +52,7 @@ impl TasksRoute {
 
         Ok(Json(AggregatedTasksResp {
             total_pages: res.0,
-            data: TasksMapper::convert(res.1).collect(),
+            data: TasksMapper::convert_many(res.1).collect(),
         }))
     }
 
@@ -68,6 +70,10 @@ impl TasksRoute {
                 log::error!("{}", &e);
                 InternalServerError(e)
             })?;
-        Ok(Json(DetailedTaskMapper::convert(res)))
+
+        match DetailedTaskMapper::convert(res) {
+            Some(data) => Ok(Json(data)),
+            None => Err(NotFound(EmptyError))
+        }
     }
 }

@@ -29,7 +29,7 @@ impl BatchMapperLike for TasksMapper {
 
     fn convert_many(
         value: impl IntoIterator<Item = Self::FromType>,
-    ) -> impl IntoIterator<Item = Self::ToType> {
+    ) -> impl Iterator<Item = Self::ToType> {
         let mut m: HashMap<u32, Task> = HashMap::new();
         for t in value.into_iter() {
             if !m.contains_key(&t.task_id) {
@@ -78,15 +78,17 @@ impl MapperLike for DetailedTaskMapper {
     type ToType = DetailedTask;
 
     fn convert(value: impl IntoIterator<Item = Self::FromType>) -> Option<Self::ToType> {
-        let mut task: Option<_> = None;
+        let mut res: Option<_> = None;
         for t in value.into_iter() {
-            if let None = task {
-                task = Some(DetailedTask {
+            if let None = res {
+                res = Some(DetailedTask {
                     task_id: t.task_id,
                     task_type: t.task_type.as_str().try_into().unwrap(),
                     object: DetailedServiceObject {
                         object_id: t.object_id,
                         object_place_id: t.object_place_id,
+                        object_title: t.object_title,
+                        object_subtitle: t.object_subtitle,
                         location: Location {
                             lat: t.place_lat,
                             lon: t.place_lon,
@@ -107,7 +109,8 @@ impl MapperLike for DetailedTaskMapper {
                 });
             }
             
-            task.unwrap().transitions.push(DetailedTransition {
+            let mut new_res = res.clone().unwrap();
+            new_res.transitions.push(DetailedTransition {
                 status: t.task_transition_title,
                 transitioned_at: t.task_transitioned_at,
                 stage_info: StageInfo {
@@ -118,7 +121,8 @@ impl MapperLike for DetailedTaskMapper {
                 },
                 transitioned_by_id: t.task_transitioned_by_id,
             });
+            res = Some(new_res);
         }
-        task
+        res 
     }
 }

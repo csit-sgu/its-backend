@@ -78,6 +78,8 @@ pub struct Account {
 pub struct DetailedServiceObject {
     pub object_id: u32,
     pub object_place_id: u32,
+    pub object_title: String,
+    pub object_subtitle: Option<String>,
     pub location: Location,
     pub region_id: u32,
     pub region_title: String,
