@@ -28,6 +28,7 @@ ALTER VIEW aggregated_tasks AS (
     JOIN places p ON p.id = obj.place_id
     JOIN regions r ON r.id = p.region_id
     JOIN regular_types rt ON rt.object_type_id = obj.object_type_id
+    ORDER BY task_deadline_at
 );
 
 CREATE VIEW transition_view AS (
