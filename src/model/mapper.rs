@@ -32,12 +32,13 @@ impl BatchMapperLike for TasksMapper {
     ) -> impl Iterator<Item = Self::ToType> {
         let mut m: HashMap<u32, Task> = HashMap::new();
         for t in value.into_iter() {
-            if !m.contains_key(&t.task_id) {
+            let task_type = t.task_type.as_str().try_into();
+            if !m.contains_key(&t.task_id) && task_type.is_ok() {
                 m.insert(
                     t.task_id,
                     Task {
                         task_id: t.task_id,
-                        task_type: t.task_type.as_str().try_into().unwrap(),
+                        task_type: task_type.unwrap(),
                         object: ServiceObject {
                             object_id: t.object_id,
                             object_place_id: t.object_place_id,
@@ -82,10 +83,14 @@ impl MapperLike for DetailedTaskMapper {
     fn convert(value: impl IntoIterator<Item = Self::FromType>) -> Option<Self::ToType> {
         let mut res: Option<_> = None;
         for t in value.into_iter() {
+            let task_type = t.task_type.as_str().try_into();
+            if task_type.is_err() {
+                return None
+            }
             if let None = res {
                 res = Some(DetailedTask {
                     task_id: t.task_id,
-                    task_type: t.task_type.as_str().try_into().unwrap(),
+                    task_type: task_type.unwrap(),
                     object: DetailedServiceObject {
                         object_id: t.object_id,
                         object_place_id: t.object_place_id,
@@ -112,17 +117,20 @@ impl MapperLike for DetailedTaskMapper {
             }
             
             let mut new_res = res.clone().unwrap();
-            new_res.transitions.push(DetailedTransition {
-                status: t.task_transition_title,
-                transitioned_at: t.task_transitioned_at,
-                stage_info: MinStageInfo { 
-                    is_start: t.task_stage_is_start,
-                    is_fulfilled: t.task_stage_is_fulfilled,
-                    is_closed: t.task_stage_is_closed,
-                    is_cancelled: t.task_stage_is_cancelled,
-                },
-                transitioned_by_id: t.task_transitioned_by_id,
-            });
+            if let None = new_res.transitions.iter().find(|tr| tr.id == t.task_transition_id) {
+                new_res.transitions.push(DetailedTransition {
+                    id: t.task_transition_id,
+                    status: t.task_transition_title,
+                    transitioned_at: t.task_transitioned_at,
+                    stage_info: MinStageInfo { 
+                        is_start: t.task_stage_is_start,
+                        is_fulfilled: t.task_stage_is_fulfilled,
+                        is_closed: t.task_stage_is_closed,
+                        is_cancelled: t.task_stage_is_cancelled,
+                    },
+                    transitioned_by_id: t.task_transitioned_by_id,
+                });
+            }
             res = Some(new_res);
         }
         res 

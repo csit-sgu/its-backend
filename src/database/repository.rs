@@ -126,9 +126,9 @@ impl AggregationRepo {
             let ids: Vec<u32> =
                 ids.split(',').map(|s| s.parse::<u32>().unwrap()).collect();
             id_builder.push(curr_delim);
-            id_builder.push("object_id in (");
+            id_builder.push("object_id IN (");
             count_builder.push(curr_delim);
-            count_builder.push("object_id in (");
+            count_builder.push("object_id IN (");
             let mut ids = ids.into_iter();
             if let Some(id) = ids.next() {
                 id_builder.push_bind(id);
@@ -154,17 +154,22 @@ impl AggregationRepo {
         let ids: Vec<u32> = id_query.fetch_all(&self.mysql_pool).await?;
 
         let mut builder = sqlx::QueryBuilder::new(
-            "SELECT * FROM aggregated_tasks WHERE task_id IN (",
+            "SELECT * FROM aggregated_tasks",
         );
         let mut ids = ids.into_iter();
+        let mut have_any = false;
         if let Some(id) = ids.next() {
+            have_any = true;
+            builder.push(" WHERE task_id IN (");
             builder.push_bind(id);
         }
         for id in ids {
             builder.push(", ");
             builder.push_bind(id);
         }
-        builder.push(")");
+        if have_any {
+            builder.push(")");
+        }
 
         let query = builder.build_query_as::<FlatTask>();
         log::debug!("Executing query:\n{}", query.sql());
