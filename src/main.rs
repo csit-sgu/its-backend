@@ -9,7 +9,10 @@ use std::sync::Arc;
 use crate::{
     api::route::{
         index::IndexRoute, tasks::TasksRoute, transitions::TransitionRoute,
-    }, database::{AggregationRepo, TransitionRepo}, processing::extractor::MetricExtractor, util::Context
+    },
+    database::{AggregationRepo, TransitionRepo},
+    processing::extractor::MetricExtractor,
+    util::Context,
 };
 
 use api::route::login::LoginRoute;
@@ -43,8 +46,7 @@ async fn main() -> anyhow::Result<()> {
     let ctx = Arc::new(Context {
         aggregation_repo,
         transition_repo,
-        metric_extractor
-        
+        metric_extractor,
     });
     let routes = (
         IndexRoute,

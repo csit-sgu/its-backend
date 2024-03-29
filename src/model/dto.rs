@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use derive_more::Display;
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
+use chrono::TimeDelta;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Location {
@@ -18,6 +19,12 @@ pub struct StageInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct TimeInfo {
+    pub period: u32,
+    pub delta: u32
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Transition {
     pub status: String,
     pub transitioned_at: DateTime<Utc>,
@@ -27,8 +34,10 @@ pub struct Transition {
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct ServiceObject {
     pub object_id: u32,
+    pub object_type_id: u32,
     pub object_place_id: u32,
     pub location: Location,
+    pub time_info: TimeInfo,
     pub region_id: u32,
     pub region_title: String,
 }

@@ -1,4 +1,4 @@
-CREATE VIEW aggregated_tasks AS (
+ALTER VIEW aggregated_tasks AS (
     SELECT
         t.id AS task_id,
         t.taskable_type AS task_type,
@@ -15,7 +15,9 @@ CREATE VIEW aggregated_tasks AS (
         st_latitude(p.location) AS place_lat,
         st_longitude(p.location) AS place_lon,
         r.id AS region_id,
-        r.title AS region_title
+        r.title AS region_title,
+        rt.period as period,
+        rt.delta as delta
     FROM tasks AS t
     JOIN task_transitions tr ON tr.task_id = t.id
     JOIN task_stages ts ON ts.id = tr.task_stage_id
@@ -23,6 +25,7 @@ CREATE VIEW aggregated_tasks AS (
     JOIN service_objects obj ON obj.id = sot.service_object_id
     JOIN places p ON p.id = obj.place_id
     JOIN regions r ON r.id = p.region_id
+    JOIN regular_types rt ON rt.object_type_id = obj.object_type_id
 );
 
 CREATE VIEW transition_view AS (

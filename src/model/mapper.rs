@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use super::{
-    dto::{Account, DetailedServiceObject, DetailedTask, DetailedTransition, Location, ServiceObject, StageInfo, Task, Transition},
+    dto::{
+        Account, DetailedServiceObject, DetailedTask, DetailedTransition,
+        Location, ServiceObject, StageInfo, Task, TimeInfo, Transition,
+    },
     entity::{FlatDetailedTask, FlatTask},
 };
 
@@ -18,7 +21,9 @@ pub trait MapperLike {
     type FromType;
     type ToType;
 
-    fn convert(value: impl IntoIterator<Item = Self::FromType>) -> Option<Self::ToType>;
+    fn convert(
+        value: impl IntoIterator<Item = Self::FromType>,
+    ) -> Option<Self::ToType>;
 }
 
 pub struct TasksMapper;
@@ -41,9 +46,14 @@ impl BatchMapperLike for TasksMapper {
                         object: ServiceObject {
                             object_id: t.object_id,
                             object_place_id: t.object_place_id,
+                            object_type_id: t.object_type_id,
                             location: Location {
                                 lat: t.place_lat,
                                 lon: t.place_lon,
+                            },
+                            time_info: TimeInfo {
+                                period: t.period,
+                                delta: t.delta,
                             },
                             region_id: t.region_id,
                             region_title: t.region_title,
@@ -77,7 +87,9 @@ impl MapperLike for DetailedTaskMapper {
     type FromType = FlatDetailedTask;
     type ToType = DetailedTask;
 
-    fn convert(value: impl IntoIterator<Item = Self::FromType>) -> Option<Self::ToType> {
+    fn convert(
+        value: impl IntoIterator<Item = Self::FromType>,
+    ) -> Option<Self::ToType> {
         let mut res: Option<_> = None;
         for t in value.into_iter() {
             if let None = res {
@@ -108,7 +120,7 @@ impl MapperLike for DetailedTaskMapper {
                     transitions: vec![],
                 });
             }
-            
+
             let mut new_res = res.clone().unwrap();
             new_res.transitions.push(DetailedTransition {
                 status: t.task_transition_title,
@@ -123,6 +135,6 @@ impl MapperLike for DetailedTaskMapper {
             });
             res = Some(new_res);
         }
-        res 
+        res
     }
 }
