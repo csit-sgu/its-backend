@@ -98,6 +98,7 @@ pub struct DetailedServiceObject {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct DetailedTransition {
+    pub id: u32,
     pub status: String,
     pub transitioned_at: DateTime<Utc>,
     pub stage_info: MinStageInfo,

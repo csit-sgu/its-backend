@@ -62,6 +62,7 @@ pub struct FlatDetailedTask {
     pub account_title: String,
     pub account_type_id: u32,
     pub account_type_title: String,
+    pub task_transition_id: u32,
     pub task_transitioned_at: DateTime<Utc>,
     pub task_transitioned_by_id: u32,
     pub task_transition_title: String,
