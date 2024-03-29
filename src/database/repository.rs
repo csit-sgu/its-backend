@@ -2,8 +2,10 @@ use chrono::{DateTime, Utc};
 use sqlx::{Execute, MySqlPool};
 
 use crate::database::core::{MySqlRepository, Repository};
-use crate::model::dto::TaskType;
-use crate::model::{entity::FlatTask, entity::TransitionView};
+use crate::model::{
+    dto::TaskType, entity::FlatDetailedTask, entity::FlatTask,
+    entity::TransitionView,
+};
 
 pub struct AggregationRepo {
     pub mysql_pool: MySqlPool,
@@ -18,6 +20,7 @@ impl Repository for TransitionRepo {
         self.mysql_pool.clone()
     }
 }
+
 impl MySqlRepository<TransitionView> for TransitionRepo {}
 
 impl AggregationRepo {
@@ -161,16 +164,15 @@ impl AggregationRepo {
         Ok((total_pages as usize, rows))
     }
 
-
-    // pub async fn detailed_task(
-    //     &self,
-    //     id: u32,
-    // ) -> sqlx::Result<Option<DetailedTask>> {
-    //     sqlx::query_as::<_, DetailedTask>(
-    //         "SELECT * FROM detailed_tasks WHERE task_id = ?"
-    //     )
-    //         .bind(id)
-    //         .fetch_optional(&self.mysql_pool)
-    //         .await
-    // }
+    pub async fn detailed_task(
+        &self,
+        id: u32,
+    ) -> sqlx::Result<Option<FlatDetailedTask>> {
+        sqlx::query_as::<_, FlatDetailedTask>(
+            "SELECT * FROM detailed_tasks WHERE task_id = ?",
+        )
+        .bind(id)
+        .fetch_optional(&self.mysql_pool)
+        .await
+    }
 }

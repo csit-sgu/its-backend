@@ -20,7 +20,7 @@ pub struct StageInfo {
 #[derive(Debug, Clone, Serialize, Deserialize, Object)]
 pub struct Transition {
     pub status: String,
-    pub timestamp: DateTime<Utc>,
+    pub transitioned_at: DateTime<Utc>,
     pub stage_info: StageInfo,
 }
 
@@ -71,7 +71,46 @@ pub struct Task {
     pub task_type: TaskType,
     pub transitions: Vec<Transition>,
     pub object: ServiceObject,
-    pub deadline: DateTime<Utc>,
+    pub deadline_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Object)]
+pub struct Account {
+    pub account_id: u32,
+    pub title: String,
+    pub account_type_id: u32,
+    pub account_type_title: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct DetailedServiceObject {
+    pub object_id: u32,
+    pub object_place_id: u32,
+    pub object_title: String,
+    pub object_subtitle: Option<String>,
+    pub location: Location,
+    pub region_id: u32,
+    pub region_title: String,
+    pub region_capital: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Object)]
+pub struct DetailedTransition {
+    pub status: String,
+    pub transitioned_at: DateTime<Utc>,
+    pub stage_info: StageInfo,
+    pub transitioned_by_id: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Object)]
+pub struct DetailedTask {
+    pub task_id: u32,
+    pub task_type: TaskType,
+    pub deadline_at: DateTime<Utc>,
+    pub description: Option<String>,
+    pub account: Account,
+    pub transitions: Vec<DetailedTransition>,
+    pub object: DetailedServiceObject,
 }
 
 #[derive(Debug, Display, Clone, Serialize, Deserialize, Enum)]

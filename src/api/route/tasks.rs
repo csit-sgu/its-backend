@@ -1,10 +1,16 @@
 use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
+use poem::error::NotFound;
 use poem::{error::InternalServerError, Result};
+use poem_openapi::param::Path;
 use poem_openapi::{param::Query, payload::Json, OpenApi};
 
-use crate::model::mapper::{MapperLike, TasksMapper};
+use crate::model::dto::DetailedTask;
+use crate::model::mapper::{
+    BatchMapperLike, DetailedTaskMapper, MapperLike, TasksMapper,
+};
+use crate::util::EmptyError;
 use crate::{api::ApiTag, model::dto::AggregatedTasksResp, util::Context};
 
 pub struct TasksRoute {
@@ -48,7 +54,7 @@ impl TasksRoute {
 
         let mut aggregated_data = AggregatedTasksResp {
             total_pages: res.0,
-            data: TasksMapper::convert(res.1).collect(),
+            data: TasksMapper::convert_many(res.1).collect(),
             stats: None,
         };
 
@@ -57,23 +63,21 @@ impl TasksRoute {
         Ok(Json(aggregated_data))
     }
 
-    // #[oai(path = "/tasks/:id", method = "get", tag = ApiTag::Tasks)]
-    // pub async fn get_one(
-    //     &self,
-    //     id: Path<u32>,
-    // ) -> Result<Json<DetailedTask>> {
-    //     let res = self
-    //         .ctx
-    //         .aggregation_repo
-    //         .detailed_task(id)
-    //         .await
-    //         .map_err(|e| {
-    //             log::error!("{}", &e);
-    //             InternalServerError(e)
-    //         })?;
-    //     Ok(Json(AggregatedTasksResp {
-    //         total_pages: res.0,
-    //         data: res.1,
-    //     }))
-    // }
+    #[oai(path = "/tasks/:id", method = "get", tag = ApiTag::Tasks)]
+    pub async fn get_one(&self, id: Path<u32>) -> Result<Json<DetailedTask>> {
+        let res = self
+            .ctx
+            .aggregation_repo
+            .detailed_task(id.0)
+            .await
+            .map_err(|e| {
+                log::error!("{}", &e);
+                InternalServerError(e)
+            })?;
+
+        match DetailedTaskMapper::convert(res) {
+            Some(data) => Ok(Json(data)),
+            None => Err(NotFound(EmptyError)),
+        }
+    }
 }
