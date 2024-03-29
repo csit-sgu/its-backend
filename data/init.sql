@@ -1,4 +1,4 @@
-ALTER VIEW aggregated_tasks AS (
+CREATE VIEW aggregated_tasks AS (
     SELECT
         t.id AS task_id,
         t.taskable_type AS task_type,
@@ -14,6 +14,7 @@ ALTER VIEW aggregated_tasks AS (
         tr.transitioned_at AS task_transitioned_at,
         obj.id AS object_id,
         obj.place_id AS object_place_id,
+        obj.object_type_id AS object_type_id,
         st_latitude(p.location) AS place_lat,
         st_longitude(p.location) AS place_lon,
         r.id AS region_id,
