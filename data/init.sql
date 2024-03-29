@@ -49,7 +49,7 @@ CREATE VIEW detailed_tasks AS (
         ts.is_closed AS task_stage_is_closed,
         ts.is_canceled AS task_stage_is_cancelled,
         tr.transitioned_at AS task_transitioned_at,
-        tr.transitioned_by AS transitioned_by_id,
+        tr.transitioned_by AS task_transitioned_by_id,
         obj.id AS object_id,
         obj.place_id AS object_place_id,
         obj.title AS object_title,
