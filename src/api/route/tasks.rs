@@ -6,7 +6,7 @@ use poem::{error::InternalServerError, Result};
 use poem_openapi::param::Path;
 use poem_openapi::{param::Query, payload::Json, OpenApi};
 
-use crate::model::dto::DetailedTask;
+use crate::model::dto::{DetailedTask, Task};
 use crate::model::mapper::{
     BatchMapperLike, DetailedTaskMapper, MapperLike, TasksMapper,
 };

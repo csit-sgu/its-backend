@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use super::{
     dto::{
-        Account, DetailedServiceObject, DetailedTask, DetailedTransition,
-        Location, ServiceObject, StageInfo, Task, TimeInfo, Transition,
+        Account, DetailedServiceObject, DetailedTask, DetailedTransition, Location, MinStageInfo, ServiceObject, StageInfo, Task, TimeInfo, Transition
     },
     entity::{FlatDetailedTask, FlatTask},
 };

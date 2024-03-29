@@ -1,7 +1,7 @@
 use crate::model::dto::{ExtractedFeatures, Task, TaskType};
 
 use chrono::{DateTime, TimeDelta, Utc};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 pub struct MetricExtractor;
 
@@ -123,7 +123,29 @@ impl MetricExtractor {
     }
 
     fn extract_fallback_rate(tasks: &Vec<Task>) -> i64 {
-        0
+        log::debug!("Extracting fallback rate");
+        let mut metric = 0;
+        for task in tasks {
+            let stage_ids = task.transitions
+                .clone()
+                .into_iter()
+                .map(|tr| tr.stage_info.id);
+            let mut m: HashMap<i64, i64> = HashMap::new();
+            for id in stage_ids {
+                if !m.contains_key(&(id as i64)) {
+                    m.insert(id as i64, 0);
+                }
+                *m.get_mut(&(id as i64)).unwrap() += 1;
+            }
+            let mut acc = 0;
+            for (_, cnt) in m.iter() {
+                acc += cnt;
+            }
+            acc -= m.len() as i64;
+            acc *= acc;
+            metric += acc;
+        }
+        metric / tasks.len() as i64
     }
 
     pub fn extract(&self, tasks: &Vec<Task>) -> ExtractedFeatures {
