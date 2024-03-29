@@ -39,7 +39,8 @@ fn group_tasks_by_object(tasks: &Vec<Task>) -> BTreeMap<u32, Vec<Task>> {
             groups.insert(task.object.object_id, vec![]);
         }
         groups
-            .get_mut(&task.object.object_id).unwrap()
+            .get_mut(&task.object.object_id)
+            .unwrap()
             .push(task.clone());
     }
     log::debug!("{}", groups.len());
@@ -53,16 +54,13 @@ impl MetricExtractor {
         groups
             .iter()
             .map(|(val, task_group)| {
-                (
-                    val,
-                    task_group
-                        .iter()
-                        .filter(|x| x.task_type == TaskType::Regular),
-                )
+                (val, task_group.iter().collect::<Vec<_>>())
             })
             .map(|(_, group)| {
-                let summary = group.clone()
-                    .zip(group.clone().skip(1))
+                log::debug!("{}", group.len());
+                let summary = group
+                    .iter()
+                    .zip(group.iter().skip(1))
                     .map(|(last, next)| {
                         let last_fulfilled = last
                             .transitions
@@ -81,6 +79,8 @@ impl MetricExtractor {
                                     && !x.stage_info.is_closed
                             })
                             .unwrap();
+
+                        log::debug!("{:?}", last_fulfilled);
                         let time_info = last.object.time_info.clone();
                         get_time_penalty(
                             next_fulfilled.transitioned_at,
@@ -99,23 +99,26 @@ impl MetricExtractor {
     }
 
     fn extract_speed(tasks: &Vec<Task>) -> i64 {
-        // let groups = group_tasks_by_object(tasks);
-        // groups.iter().fold(0i64, |mut sum, (_, task)| {
-        //     let end_transition = task
-        //         .transitions
-        //         .iter()
-        //         .find(|x| x.stage_info.is_closed == true);
+        let groups = group_tasks_by_object(tasks);
+        let mut sum = 0i64;
+        for (_, group) in groups {
+            sum += group.iter().fold(0i64, |mut sum, task| {
+                let end_transition = task
+                    .transitions
+                    .iter()
+                    .find(|x| x.stage_info.is_closed == true);
 
-        //     sum += match end_transition {
-        //         Some(transition) => get_time_penalty(
-        //             transition.transitioned_at,
-        //             task.deadline_at,
-        //         ),
-        //         None => 0i64,
-        //     };
-        //     sum
-        // });
-        0
+                sum += match end_transition {
+                    Some(transition) => get_time_penalty(
+                        transition.transitioned_at,
+                        task.deadline_at,
+                    ),
+                    None => 0i64,
+                };
+                sum
+            });
+        }
+        sum
     }
 
     fn extract_remission_rate(tasks: &Vec<Task>) -> i64 {
